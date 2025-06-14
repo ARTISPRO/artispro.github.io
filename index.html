@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ARTIS'PRO – Devis & Factures</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    header, footer { text-align: center; }
+    .logo { max-width: 150px; margin: 10px auto; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+    .add-row { background-color: #28a745; }
+    .remove-row { background-color: #dc3545; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.jpeg" alt="Logo ARTIS'PRO" class="logo" />
+    <h1>ARTIS'PRO</h1>
+    <p>Entreprise Multiservices</p>
+    <p>33 Impasse Guynemer</p>
+    <p>SIRET : 93016190600019</p>
+    <p>Email : alexis.marc.pro@outlook.fr | Tél : 07 76 01 02 29</p>
+  </header>
+
+  <main>
+    <label for="docType">Type de document :</label>
+    <select id="docType">
+      <option value="Devis">Devis</option>
+      <option value="Facture">Facture</option>
+    </select>
+
+    <label for="client">Client :</label>
+    <input type="text" id="client" placeholder="Nom du client" />
+
+    <label for="date">Date :</label>
+    <input type="date" id="date" />
+
+    <table id="itemsTable">
+      <thead>
+        <tr>
+          <th>Désignation</th>
+          <th>Quantité</th>
+          <th>Prix HT</th>
+          <th>Montant TTC</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" class="add-row" onclick="addRow()">+ Ajouter une ligne</button>
+    <br><br>
+    <button onclick="generatePDF()">📄 Générer le PDF</button>
+  </main>
+
+  <footer>
+    <p>&copy; ARTIS'PRO - 2025</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let count = 1;
+
+    function addRow() {
+      const tbody = document.querySelector("#itemsTable tbody");
+      const row = document.createElement("tr");
+      row.innerHTML = \`
+        <td><input type="text" class="designation" /></td>
+        <td><input type="number" class="qty" value="1" /></td>
+        <td><input type="number" class="pu" value="0" /></td>
+        <td class="ttc">0 €</td>
+        <td><button class="remove-row" onclick="removeRow(this)">X</button></td>
+      \`;
+      tbody.appendChild(row);
+      updateTTC();
+    }
+
+    function removeRow(button) {
+      button.closest("tr").remove();
+      updateTTC();
+    }
+
+    document.addEventListener("input", updateTTC);
+
+    function updateTTC() {
+      document.querySelectorAll("#itemsTable tbody tr").forEach(row => {
+        const qty = parseFloat(row.querySelector(".qty").value || 0);
+        const pu = parseFloat(row.querySelector(".pu").value || 0);
+        const ttc = qty * pu;
+        row.querySelector(".ttc").textContent = ttc.toFixed(2) + " €";
+      });
+    }
+
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const type = document.getElementById("docType").value;
+      const client = document.getElementById("client").value;
+      const date = document.getElementById("date").value;
+      const today = new Date();
+      const number = type === "Devis" ? "DE" : "FA";
+      const docNumber = \`\${today.getFullYear()}-\${number}-000\${Math.floor(Math.random()*900+100)}\`;
+
+      doc.setFontSize(12);
+      doc.text("ARTIS'PRO - Entreprise Multiservices", 10, 10);
+      doc.text("33 Impasse Guynemer", 10, 18);
+      doc.text("SIRET : 93016190600019", 10, 26);
+      doc.text("Email : alexis.marc.pro@outlook.fr", 10, 34);
+      doc.text("Tél : 07 76 01 02 29", 10, 42);
+      doc.text(type + " n° " + docNumber, 140, 10);
+      doc.text("Client : " + client, 10, 55);
+      doc.text("Date : " + date, 10, 63);
+
+      let y = 75;
+      doc.text("Désignation | Qté | PU HT | Total TTC", 10, y);
+      y += 8;
+
+      let total = 0;
+      document.querySelectorAll("#itemsTable tbody tr").forEach(row => {
+        const d = row.querySelector(".designation").value;
+        const q = row.querySelector(".qty").value;
+        const pu = row.querySelector(".pu").value;
+        const ttc = (q * pu).toFixed(2);
+        total += parseFloat(ttc);
+        doc.text(\`\${d} | \${q} | \${pu}€ | \${ttc}€\`, 10, y);
+        y += 8;
+      });
+
+      y += 8;
+      doc.text("Total TTC : " + total.toFixed(2) + " €", 10, y);
+      y += 20;
+
+      doc.text("BON POUR ACCORD", 10, y); y += 8;
+      doc.text("TVA non applicable, article 293 B du CGI", 10, y); y += 8;
+      doc.text("Pénalités de retard : Taux légal en vigueur", 10, y); y += 8;
+      doc.text("Conditions de règlement : Paiement fin des travaux", 10, y); y += 8;
+      doc.text("Mode de paiement : Espèces, chèque, virement", 10, y);
+
+      doc.save(type + "_" + docNumber + ".pdf");
+    }
+
+    window.onload = () => addRow();
+  </script>
+</body>
+</html>
