@@ -3,104 +3,72 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ARTIS'PRO - Devis / Facture</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1, h2 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-        input[type="text"], input[type="number"], select { width: 100%; box-sizing: border-box; }
-        .button-row { text-align: center; margin: 10px 0; }
-        .info { margin-top: 20px; }
-    </style>
+    <title>ARTIS'PRO - Devis & Facture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="content">
-        <h1>ARTIS’PRO</h1>
-        <div style="text-align:center">
-            <img src="logo.png" alt="Logo" height="80">
-        </div>
-        <h2>33 Impasse Guynemer<br>
-        SIRET : 93016190600019<br>
-        alexis.marc.pro@outlook.fr – 0776010229</h2>
+    <div class="container">
+        <header>
+            <img src="logo.png" alt="Logo" class="logo">
+            <h1>ARTIS’PRO</h1>
+            <p>33 Impasse Guynemer, 30000 Nîmes<br>
+            alexis.marc.pro@outlook.fr – 07.76.01.02.29</p>
+        </header>
 
-        <div class="info">
-            <strong>Nom du client :</strong> <input type="text" id="clientNom"><br>
-            <strong>Adresse du client :</strong> <input type="text" id="clientAdresse"><br>
-            <strong>Téléphone :</strong> <input type="text" id="clientTel"><br>
-            <strong>Email :</strong> <input type="text" id="clientEmail"><br>
-            <strong>Adresse du bien concerné :</strong> <input type="text" id="adresseBien"><br>
-            <strong>Propriétaire du bien :</strong> <input type="text" id="proprietaire"><br>
-        </div>
+        <section class="form-section">
+            <label>Type :
+                <select id="docType">
+                    <option value="Devis">Devis</option>
+                    <option value="Facture">Facture</option>
+                </select>
+            </label>
+            <label>Numéro :
+                <input type="text" id="docNumber" placeholder="ex: 001">
+            </label>
+            <button onclick="addRow()">Ajouter une ligne</button>
+            <button onclick="generatePDF()">Générer PDF</button>
+        </section>
 
-        <div class="info">
-            <label>Type : </label>
-            <select id="typeDoc">
-                <option>Devis</option>
-                <option>Facture</option>
-            </select>
-            <label>Numéro : </label>
-            <input type="text" id="numeroDoc" value="001" style="width: 60px;">
-            <button onclick="ajouterLigne()">Ajouter une ligne</button>
-            <button onclick="genererPDF()">Générer PDF</button>
-        </div>
+        <section class="client-info">
+            <h3>Informations client</h3>
+            <input type="text" id="clientName" placeholder="Nom du client">
+            <input type="text" id="clientAddress" placeholder="Adresse du client">
+            <input type="text" id="clientPhone" placeholder="Téléphone du client">
+            <input type="email" id="clientEmail" placeholder="Email du client">
+            <input type="text" id="propertyAddress" placeholder="Adresse du bien concerné">
+            <input type="text" id="propertyOwner" placeholder="Nom du propriétaire">
+        </section>
 
-        <table id="table">
+        <table id="itemsTable">
             <thead>
                 <tr>
                     <th>Désignation</th>
                     <th>Quantité</th>
                     <th>Prix HT</th>
                     <th>Montant TTC</th>
-                    <th>Supprimer</th>
+                    <th>Action</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+            </tbody>
         </table>
 
-        <p><strong>BON POUR ACCORD</strong><br>
-        TVA non applicable, article 293 B du CGI<br>
-        Pénalités de retard : Taux légal en vigueur<br>
-        Conditions de règlement : Paiement fin des travaux<br>
-        Mode de paiement : Espèces, chèque, virement</p>
+        <div class="totals">
+            <p>Total HT : <span id="totalHT">0 €</span></p>
+            <p>Total TVA : <span id="totalTVA">0 €</span></p>
+            <p><strong>Total TTC : <span id="totalTTC">0 €</span></strong></p>
+        </div>
+
+        <footer>
+            <p>TVA non applicable, article 293 B du CGI<br>
+            Pénalités de retard : Taux légal en vigueur<br>
+            Conditions de règlement : Paiement fin des travaux<br>
+            Mode de paiement : Espèces, chèque, virement</p>
+        </footer>
     </div>
 
-    <script>
-        function ajouterLigne() {
-            const tbody = document.querySelector("#table tbody");
-            const tr = document.createElement("tr");
-
-            tr.innerHTML = `
-                <td><input type="text" placeholder="Désignation"></td>
-                <td><input type="number" placeholder="Quantité" onchange="calculTTC(this)"></td>
-                <td><input type="number" placeholder="Prix HT" onchange="calculTTC(this)"></td>
-                <td><input type="text" readonly></td>
-                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-            `;
-
-            tbody.appendChild(tr);
-        }
-
-        function calculTTC(elem) {
-            const row = elem.closest("tr");
-            const qte = parseFloat(row.children[1].children[0].value) || 0;
-            const prix = parseFloat(row.children[2].children[0].value) || 0;
-            const montant = (qte * prix).toFixed(2);
-            row.children[3].children[0].value = montant + " €";
-        }
-
-        function genererPDF() {
-            const element = document.getElementById("content");
-            const opt = {
-                margin:       0.5,
-                filename:     `${document.getElementById("typeDoc").value}_${document.getElementById("numeroDoc").value}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
