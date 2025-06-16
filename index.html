@@ -3,41 +3,32 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ARTIS'PRO - Devis & Facture</title>
+    <title>ARTIS’PRO - Devis & Facture</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="page" id="pdf-content">
         <header>
-            <img src="logo.png" alt="Logo" class="logo">
-            <h1>ARTIS’PRO</h1>
-            <p>33 Impasse Guynemer, 30000 Nîmes<br>
-            alexis.marc.pro@outlook.fr – 07.76.01.02.29</p>
+            <div class="left">
+                <img src="logo.png" alt="Logo" class="logo">
+                <h2>ARTIS’PRO</h2>
+                <p>33 Impasse Guynemer<br>SIRET : 93016190600019<br>alexis.marc.pro@outlook.fr<br>07 76 01 02 29</p>
+            </div>
+            <div class="right">
+                <h3 id="docType">Devis</h3>
+                <p>N° <span id="docNumber">001</span></p>
+            </div>
         </header>
 
-        <section class="form-section">
-            <label>Type :
-                <select id="docType">
-                    <option value="Devis">Devis</option>
-                    <option value="Facture">Facture</option>
-                </select>
-            </label>
-            <label>Numéro :
-                <input type="text" id="docNumber" placeholder="ex: 001">
-            </label>
-            <button onclick="addRow()">Ajouter une ligne</button>
-            <button onclick="generatePDF()">Générer PDF</button>
-        </section>
-
-        <section class="client-info">
-            <h3>Informations client</h3>
-            <input type="text" id="clientName" placeholder="Nom du client">
-            <input type="text" id="clientAddress" placeholder="Adresse du client">
-            <input type="text" id="clientPhone" placeholder="Téléphone du client">
-            <input type="email" id="clientEmail" placeholder="Email du client">
-            <input type="text" id="propertyAddress" placeholder="Adresse du bien concerné">
-            <input type="text" id="propertyOwner" placeholder="Nom du propriétaire">
+        <section class="client">
+            <h4>Client</h4>
+            <p id="clientName">Nom : </p>
+            <p id="clientAddress">Adresse : </p>
+            <p id="clientPhone">Téléphone : </p>
+            <p id="clientEmail">Email : </p>
+            <p id="propertyOwner">Propriétaire : </p>
+            <p id="propertyAddress">Adresse du bien : </p>
         </section>
 
         <table id="itemsTable">
@@ -47,25 +38,42 @@
                     <th>Quantité</th>
                     <th>Prix HT</th>
                     <th>Montant TTC</th>
-                    <th>Action</th>
+                    <th></th>
                 </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
         </table>
 
         <div class="totals">
-            <p>Total HT : <span id="totalHT">0 €</span></p>
-            <p>Total TVA : <span id="totalTVA">0 €</span></p>
-            <p><strong>Total TTC : <span id="totalTTC">0 €</span></strong></p>
+            <p><strong>Total HT :</strong> <span id="totalHT">0 €</span></p>
+            <p><strong>TVA :</strong> <span id="totalTVA">0 €</span></p>
+            <p><strong>Total TTC :</strong> <span id="totalTTC">0 €</span></p>
         </div>
 
         <footer>
-            <p>TVA non applicable, article 293 B du CGI<br>
-            Pénalités de retard : Taux légal en vigueur<br>
-            Conditions de règlement : Paiement fin des travaux<br>
-            Mode de paiement : Espèces, chèque, virement</p>
+            <p><strong>BON POUR ACCORD</strong></p>
+            <p>TVA non applicable, article 293 B du CGI</p>
+            <p>Pénalités de retard : Taux légal en vigueur</p>
+            <p>Conditions de règlement : Paiement fin des travaux</p>
+            <p>Mode de paiement : Espèces, chèque, virement</p>
         </footer>
+    </div>
+
+    <div class="controls">
+        <label for="typeSelect">Type :</label>
+        <select id="typeSelect">
+            <option value="Devis">Devis</option>
+            <option value="Facture">Facture</option>
+        </select>
+        <input type="text" id="numberInput" placeholder="Numéro (ex: 001)">
+        <input type="text" id="inputClientName" placeholder="Nom du client">
+        <input type="text" id="inputClientAddress" placeholder="Adresse">
+        <input type="text" id="inputClientPhone" placeholder="Téléphone">
+        <input type="email" id="inputClientEmail" placeholder="Email">
+        <input type="text" id="inputPropertyOwner" placeholder="Propriétaire">
+        <input type="text" id="inputPropertyAddress" placeholder="Adresse du bien">
+        <button onclick="addRow()">Ajouter une ligne</button>
+        <button onclick="generatePDF()">Créer le PDF</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
